@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk, ImageSequence
 import random
-import os
+import pyttsx3
 
 # Fun facts
 fun_facts = [
@@ -12,6 +12,9 @@ fun_facts = [
     "Sloths can hold their breath longer than dolphins.",
     "A day on Venus is longer than a year on Venus."
 ]
+
+# Inicializace TTS
+engine = pyttsx3.init()
 
 # Hlavní okno
 root = tk.Tk()
@@ -32,7 +35,7 @@ def animate_gif():
     global gif_index
     gif_index = (gif_index + 1) % len(frames)
     canvas.itemconfig(gif_item, image=frames[gif_index])
-    if root_running[0]:  # kontrola, jestli ještě jede root
+    if root_running[0]:
         root.after(100, animate_gif)
 
 # --- Po skončení gifu zobrazí Bonziho ---
@@ -64,7 +67,6 @@ def show_menu(event):
         fact_label = None
 
     menu_frame = tk.Frame(root, bg="lightgray", bd=2, relief="raised")
-    # správná pozice – relativně k hlavnímu oknu
     menu_frame.place(x=event.x_root - root.winfo_rootx(),
                      y=event.y_root - root.winfo_rooty())
 
@@ -79,9 +81,14 @@ def show_fun_fact():
     if menu_frame:
         menu_frame.destroy()
     menu_frame = None
+
     fact = random.choice(fun_facts)
     fact_label = tk.Label(root, text=fact, bg="yellow", wraplength=300, font=("Arial", 10, "bold"))
     fact_label.place(x=50, y=100)
+
+    # TTS: přečtení fun fact
+    engine.say(fact)
+    engine.runAndWait()
 
 def make_note():
     global menu_frame
@@ -94,8 +101,6 @@ def make_note():
 
 def close_menu_or_fact(event):
     global menu_frame, fact_label
-
-    # Pokud klik byl na Bonziho → ignoruj (menu má zůstat)
     if bonzi is not None and canvas.find_withtag("current") == (bonzi,):
         return
 
@@ -123,5 +128,4 @@ def on_close():
     root.destroy()
 
 root.protocol("WM_DELETE_WINDOW", on_close)
-
 root.mainloop()
